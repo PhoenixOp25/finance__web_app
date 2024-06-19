@@ -1,2 +1,2 @@
-# divY
- Welcome to a smarter way to manage your finances! In a world where every penny counts, our App is your key to financial empowerment. Our app is designed to simplify and elevate your money management experience. Managing shared expenses can be a daunting task, leading to confusion, disagreements, and time-consuming calculations. Enter DivvyUP, the ultimate solution to streamline shared finances and alleviate the common challenges associated with communal expenses.
+# FINNY
+ Welcome to a smarter way to manage your finances! In a world where every penny counts, our App is your key to financial empowerment. Our app is designed to simplify and elevate your money management experience. Managing shared expenses can be a daunting task, leading to confusion, disagreements, and time-consuming calculations. Enter FINNY, the ultimate solution to streamline shared finances and alleviate the common challenges associated with communal expenses.
