@@ -1,4 +1,4 @@
-Finny
+!Finny
 FINANCES MADE EASY!!
 Welcome to a smarter way to manage your finances! In a world where every penny counts, our App is your key to financial empowerment. Our app is designed to simplify and elevate your money management experience.
 
@@ -45,7 +45,41 @@ Support real-time currency exchange, allowing users to add expenses in any curre
 View reports based on:
 Weekly filter
 Monthly filter
-Custom filter
+Custom filterFINNY
+TEAM: SunnySideUp
+FINANCES MADE EASY!!
+Welcome to FINNY, your key to financial empowerment. Simplify shared expenses and elevate your money management experience.
+
+WHAT FINNY OFFERS!!!
+RECORD DAILY TRANSACTIONS
+MANAGE GROUPS WITH FRIENDS
+SIMPLIFY AND SETTLE DEBTS
+ANALYZE YOUR SAVINGS
+SAVE BILLS AND RECEIPTS
+TRACK EXPENSES IN GROUPS
+TECH-STACK USED
+FRONTEND: React, TailwindCSS
+BACKEND: NodeJS, ExpressJS
+DATABASE: MongoDB
+TOOLS: ReactOAuth2.0 | Google, EmailJS, Recharts
+WELCOME TO FINNY!!!
+Sign in to experience seamless money management with FINNY.
+
+FEATURES
+DASHBOARD: View groups and analytics.
+GROUP MANAGEMENT: Add members, expenses, simplify debts, notify payments, export expenses, view reports.
+EXPENSE MANAGEMENT: Categorical expenses, real-time currency exchange, detailed reports.
+CHALLENGES FACED
+SIMPLIFY DEBTS: NP-complete problem.
+DATA MODELLING: Agile database design updates.
+WOW FACTORS!!
+Visualize debts, multiple themes.
+User-friendly UI, notifications.
+Export to spreadsheets.
+WHAT’S NEXT??
+Payment Integration: Link FINNY to payment platforms.
+Chat Feature: Enhance user communication.
+Machine Learning: Personalize financial recommendations
 ANALYTICS: Graphs depicting the percentage of amount lent vs owed can be seen.
 
 SIMPLIFY DEBTS: Shows the net transactions that are owed in a group after all transactions.
