@@ -1,91 +1,62 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const User = require("../modal/User");
+const User = require("../model/User");
 const Authenticate = require("../middleware/authenticate");
-const Group = require("../modal/Group")
-const GroupExpense = require("../modal/GroupExpense")
+const Group = require("../model/Group");
+const GroupExpense = require("../model/GroupExpense");
 
 const calculateSplit = (paidBy, members, amount) => {
-    const splittedAmount = +Number(amount / members.length).toFixed(2);
-    const membersBalance = members.map((member) => {
-        if (member._id.toString() === paidBy.toString()) {
-            return {
-                memberId: member._id,
-                name: member.name,
-                balance: Number(amount - splittedAmount).toFixed(2),
-            };
-        } else {
-            return {
-                memberId: member._id,
-                name: member.name,
-                balance: `-${Number(splittedAmount).toFixed(2)}`,
-            };
-        }
+    const splitAmount = Number((amount / members.length).toFixed(2));
+    return members.map(member => {
+        const balance = member._id.toString() === paidBy.toString()
+            ? amount - splitAmount
+            : -splitAmount;
+        
+        return {
+            memberId: member._id,
+            name: member.name,
+            balance: Number(balance).toFixed(2),
+        };
     });
-    return membersBalance;
 };
 
 const updateMemberBalances = async (expenses, members) => {
-    let updatedMemberBalances;
-    if (expenses) {
-        updatedMemberBalances = expenses.map(({ _id, paidBy, amount }) => {
-            return {
-                expenseId: _id,
-                membersBalance: calculateSplit(paidBy, members, amount),
-            };
-        });
-    }
+    if (!expenses) return [];
 
-    return Promise.all(updatedMemberBalances);
+    const updatedBalances = expenses.map(({ _id, paidBy, amount }) => ({
+        expenseId: _id,
+        membersBalance: calculateSplit(paidBy, members, amount),
+    }));
+
+    return Promise.all(updatedBalances);
 };
+
 const simplifyDebts = (expenses) => {
-    // Step 1: Calculate the total amount each person owes or is owed
-    let balances = {};
-    let simplifiedDebts = [];
-    try {
-        if (expenses) {
-            expenses.forEach((expense) => {
-                // Add the amount to the payer's balance
-                balances[expense.payer] = (balances[expense.payer] || 0) + expense.amount;
+    const balances = {};
 
-                // Subtract the amount from each participant's balance
-                expense.participants.forEach((participant) => {
-                    balances[participant] = (balances[participant] || 0) - expense.amount / expense.participants.length;
-                });
-            });
+    expenses.forEach(({ payer, amount, participants }) => {
+        balances[payer] = (balances[payer] || 0) + amount;
+        participants.forEach(participant => {
+            balances[participant] = (balances[participant] || 0) - (amount / participants.length);
+        });
+    });
 
-            // Step 2: Simplify debts by finding pairs of people who can settle up
+    const simplifiedDebts = [];
 
-            while (true) {
-                // Find the person with the maximum positive balance
-                let maxCreditor = Object.keys(balances).reduce((a, b) => balances[a] > balances[b] ? a : b);
+    while (true) {
+        const [maxCreditor] = Object.keys(balances).sort((a, b) => balances[b] - balances[a]);
+        const [maxDebtor] = Object.keys(balances).sort((a, b) => balances[a] - balances[b]);
 
-                // Find the person with the maximum negative balance
-                let maxDebtor = Object.keys(balances).reduce((a, b) => balances[a] < balances[b] ? a : b);
+        if (balances[maxCreditor] === 0 || Math.abs(balances[maxCreditor]) < 0.01) break;
 
-                // If both balances are zero or negligible, break the loop
-                if (balances[maxCreditor] === 0 || Math.abs(balances[maxCreditor]) < 0.01) {
-                    break;
-                }
+        const settleAmount = Math.min(Math.abs(balances[maxCreditor]), Math.abs(balances[maxDebtor]));
+        balances[maxCreditor] -= settleAmount;
+        balances[maxDebtor] += settleAmount;
 
-                // Calculate the amount to settle between maxCreditor and maxDebtor
-                let settleAmount = Math.min(Math.abs(balances[maxCreditor]), Math.abs(balances[maxDebtor]));
-
-                // Update balances and add the settlement to the result
-                balances[maxCreditor] -= settleAmount;
-                balances[maxDebtor] += settleAmount;
-                simplifiedDebts.push({ from: maxDebtor, to: maxCreditor, amount: settleAmount });
-            }
-        }
-        return simplifiedDebts;
-    } catch (err) {
-        // console.log(err);
-        return {};
+        simplifiedDebts.push({ from: maxDebtor, to: maxCreditor, amount: settleAmount });
     }
 
+    return simplifiedDebts;
+};
 
-}
-
-
-
-module.exports = { calculateSplit, updateMemberBalances, simplifyDebts }
+module.exports = { calculateSplit, updateMemberBalances, simplifyDebts };
