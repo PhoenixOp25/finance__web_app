@@ -16,13 +16,34 @@ const Home = () => {
     const navigate = useNavigate();
     const [groupList, setGroup] = useState([]);
     const [currentUser, setCurrentUser] = useState({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getUserDeatils(setCurrentUser);
-    }, [])
+        const fetchUserDetails = async () => {
+            try {
+                await getUserDeatils(setCurrentUser);
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+                navigate("/");
+            }
+        };
+        fetchUserDetails();
+    }, [navigate]);
+
     useEffect(() => {
-        getGroupDetails(setGroup, currentUser._id);
-    }, [currentUser])
+        if (currentUser._id) {
+            const fetchGroupDetails = async () => {
+                try {
+                    await getGroupDetails(setGroup, currentUser._id);
+                } catch (error) {
+                    console.error('Error fetching group details:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchGroupDetails();
+        }
+    }, [currentUser]);
 
     const callHomePage = async () => {
         try {
@@ -34,80 +55,64 @@ const Home = () => {
                 withCredentials: true
             });
 
-            const data = response.data;
-
             if (response.status !== 200) {
                 alert("Error");
             }
         } catch (error) {
+            console.error('Error fetching homepage data:', error);
             navigate("/");
-            console.error(error);
         }
     };
 
     useEffect(() => {
         callHomePage();
-    }, [])
-
+    }, []);
 
     return (
-        <div className="dark:bg-gray-900 dark-text-white md:relative md:float-right md:w-[90%] lg:relative lg:float-right lg:w-[90%]">
-            <div className="dark:bg-gray-900 dark-text-white my-10 px-0 sm:px-6 lg:mx-auto lg:px-8 xl:max-w-6xl dark:bg-gray-900">
-                {/* Group Overview */}
-                <div className="dark:bg-gray-900 dark:text-white my-12">
-                    <div className="dark:bg-gray-900 dark:bgflex justify-between border-b pb-6">
-                        <h1 className="dark:bg-gray-900 dark:text-white text-2xl font-bold dark:text-white">Your Groups</h1>
+        <div className="dark:bg-gray-900 text-white md:w-[90%] lg:w-[90%] mx-auto">
+            <div className="my-10 px-6 lg:px-8 xl:max-w-6xl">
+                <div className="my-12">
+                    <div className="flex justify-between border-b pb-6">
+                        <h1 className="text-2xl font-bold">Your Groups</h1>
                         {groupList.length > 3 && (
                             <Link to="/groups">
                                 <Button
                                     type="link"
                                     rightIcon={<ExternalLinkIcon className="w-5" />}
                                 >
-                                    View All{" "}
+                                    View All
                                 </Button>
                             </Link>
                         )}
                     </div>
-                    {groupList ? (
-                        <div className="dark:bg-gray-900 dark:text-white mt-6 grid w-full space-y-3 sm:place-content-center sm:place-items-center sm:space-y-0 md:grid-cols-2 lg:grid-cols-3">
+                    {loading ? (
+                        <div className="flex justify-center mt-10">
+                            <BeatLoader />
+                        </div>
+                    ) : (
+                        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {groupList.slice(0, 3).map((group) => (
                                 <div
                                     key={group._id}
-                                    className="dark:bg-gray-900 dark:text-white flex h-56 w-3/4 min-w-full flex-col justify-between rounded border-2 shadow-sm sm:min-w-0"
+                                    className="flex flex-col justify-between h-56 border-2 rounded shadow-sm p-4"
                                 >
-                                    <div className="dark:bg-gray-900 dark:text-white p-2 py-3 px-6">
-                                        <div className="dark:bg-gray-900 dark:text-white mb-3 flex flex-col  justify-between border-b pb-2">
-                                            <p className=" dark:bg-gray-900 dark:text-white truncate text-2xl font-bold text-gray-800 dark:text-white">
-                                                {group.name}
+                                    <div>
+                                        <h2 className="text-2xl font-bold">{group.name}</h2>
+                                        <p className="mt-2 text-sm text-gray-500">{group.description}</p>
+                                        <div className="mt-4">
+                                            <p className="flex items-center text-sm font-semibold">
+                                                <MoneyBag className="h-6 w-6 mr-2" />
+                                                Total Expenses:
+                                                <span className="ml-1 text-2xl font-semibold">{group.totalExpenses}</span>
                                             </p>
-                                            <p className="dark:bg-gray-900 dark:text-white mt-2 truncate text-sm text-gray-500 dark:text-white">
-                                                {group.description}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="dark:bg-gray-900 dark:text-white flex items-center text-sm font-semibold uppercase text-gray-500 dark:text-white">
-                                                <span className="dark:bg-gray-900 dark:text-white mr-2">
-                                                    <MoneyBag className="dark:bg-gray-900 dark:text-white h-6 w-6" />
-                                                </span>
-                                                Total Expenses :
-                                                <span className="ml-1 text-2xl font-semibold text-gray-800">
-                                                    {group.totalExpenses}
-                                                </span>
-                                            </p>
-                                        </div>
-                                        <div className="mt-3 flex flex-col items-start">
-                                            <p className="flex items-center text-sm font-semibold uppercase text-gray-500">
-                                                <span className="mr-2">
-                                                    <Group className="h-6 w-6" />
-                                                </span>
-                                                Members :
-                                                <span className="ml-1 text-2xl font-semibold text-gray-800">
-                                                    {group.members.length}
-                                                </span>
+                                            <p className="flex items-center mt-3 text-sm font-semibold">
+                                                <Group className="h-6 w-6 mr-2" />
+                                                Members:
+                                                <span className="ml-1 text-2xl font-semibold">{group.members.length}</span>
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex justify-end bg-gray-100 p-2">
+                                    <div className="flex justify-end mt-4">
                                         <Link to={`/group/detail/${group._id}`}>
                                             <Button
                                                 type="link"
@@ -120,45 +125,35 @@ const Home = () => {
                                 </div>
                             ))}
                             {groupList.length < 3 && (
-                                <div>
-                                    <Link to="/addgroup" className="h-56 shadow-sm sm:w-3/4">
-                                        <div className="flex h-56 min-w-full cursor-pointer flex-col items-center  justify-center rounded border-2 border-dashed hover:bg-gray-50 sm:min-w-0">
-                                            <Button type="link">
-                                                <p className="flex justify-center">
-                                                    <PlusCircleIcon className="mb-4 w-10 stroke-1 text-gray-600" />{" "}
-                                                </p>
-                                                <p className="text-2xl font-medium text-gray-600 dark:text-white">
-                                                    Add Group
-                                                </p>
-                                            </Button>
-                                        </div>
-                                    </Link>
-                                </div>
+                                <Link to="/addgroup" className="flex items-center justify-center h-56 border-2 border-dashed rounded shadow-sm">
+                                    <Button type="link">
+                                        <PlusCircleIcon className="mb-4 w-10 stroke-1 text-gray-600" />
+                                        <p className="text-2xl font-medium text-gray-600">Add Group</p>
+                                    </Button>
+                                </Link>
                             )}
                         </div>
-                    ) : (
-                        <BeatLoader />
                     )}
                 </div>
-                {/* Expense Overview */}
-                <div className="dark:bg-gray-900 dark:text-white mt-12">
-                    <div className="dark:bg-gray-900 dark:text-white border-b pb-6">
-                        <h1 className="dark:bg-gray-900 dark:text-white text-2xl font-bold dark:text-white">Expense Overview</h1>
-                    </div>
 
-                    <div className="dark:bg-gray-900 dark:text-white grid-col-1 mt-6 grid space-y-3 sm:place-content-center sm:place-items-center sm:space-y-0 md:grid-cols-2">
-                        <div className="dark:bg-gray-900 dark:text-white min-w-full  md:pl-8">
+                <div className="mt-12">
+                    <div className="border-b pb-6">
+                        <h1 className="text-2xl font-bold">Expense Overview</h1>
+                    </div>
+                    <div className="mt-6 grid gap-4 md:grid-cols-2">
+                        <div className="md:pl-8">
                             <PieGraph currentUser={currentUser} />
                         </div>
-                        <div className="dark:bg-gray-900 dark:text-white min-w-full  md:pl-8">
+                        <div className="md:pl-8">
                             <BarGraph />
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        // </div >
     );
 };
 
 export default Home;
+
+
